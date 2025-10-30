@@ -1,91 +1,32 @@
-import os
-import threading
-from flask import Flask, render_template, request, jsonify
+import asyncio
 from aiogram import Bot, Dispatcher, types
-from aiogram.utils import executor
-from db import init_db, ensure_user, get_balance, change_balance
+from aiogram.filters import CommandStart
+from aiogram.types import Message
+import os
+from flask import Flask, render_template
 
-# ---------------- Flask qismi ----------------
-init_db()
-app = Flask(__name__, static_folder="static", template_folder="templates")
+# Bot tokenni olamiz
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+# Flask ilova
+app = Flask(__name__)
 
 @app.route("/")
-def index():
-    # templates/index.html yo'q bo'lsa ham ishlaydi
-    try:
-        return render_template("index.html")
-    except Exception:
-        return "<h1>Ruda Mini Ilova ishlayapti 🚀</h1><p>Flask server muvaffaqiyatli ishga tushdi.</p>"
+def home():
+    return render_template("index.html")
 
-@app.route("/api/balance", methods=["POST"])
-def api_balance():
-    data = request.json or {}
-    user_id = data.get("user_id")
-    if user_id is None:
-        return jsonify({"ok": False, "error": "user_id required"}), 400
-    ensure_user(user_id, data.get("first_name", ""))
-    bal = get_balance(user_id)
-    return jsonify({"ok": True, "balance": bal})
+# Aiogram setup
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
 
-@app.route("/api/claim", methods=["POST"])
-def api_claim():
-    data = request.json or {}
-    user_id = data.get("user_id")
-    amount = float(data.get("amount", 1))
-    if user_id is None:
-        return jsonify({"ok": False, "error": "user_id required"}), 400
-    new_bal = change_balance(user_id, amount)
-    return jsonify({"ok": True, "balance": new_bal, "added": amount})
+@dp.message(CommandStart())
+async def start_cmd(message: Message):
+    await message.answer("Salom! Bot muvaffaqiyatli ishga tushdi 🚀")
 
-@app.route("/api/deposit", methods=["POST"])
-def api_deposit():
-    data = request.json or {}
-    user_id = data.get("user_id")
-    amount = float(data.get("amount", 0))
-    if user_id is None or amount <= 0:
-        return jsonify({"ok": False, "error": "user_id and positive amount required"}), 400
-    new_bal = change_balance(user_id, amount)
-    return jsonify({"ok": True, "balance": new_bal})
+async def run_bot():
+    await dp.start_polling(bot)
 
-@app.route("/api/withdraw", methods=["POST"])
-def api_withdraw():
-    data = request.json or {}
-    user_id = data.get("user_id")
-    amount = float(data.get("amount", 0))
-    if user_id is None or amount <= 0:
-        return jsonify({"ok": False, "error": "user_id and positive amount required"}), 400
-    current = get_balance(user_id)
-    if current < amount:
-        return jsonify({"ok": False, "error": "Insufficient balance"}), 400
-    new_bal = change_balance(user_id, -amount)
-    return jsonify({"ok": True, "balance": new_bal})
-
-# ---------------- Aiogram (bot) qismi ----------------
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://your-railway-url.up.railway.app/")
-
-if not BOT_TOKEN:
-    print("⚠️ BOT_TOKEN environment variable not set!")
-else:
-    bot = Bot(token=BOT_TOKEN)
-    dp = Dispatcher(bot)
-
-    @dp.message_handler(commands=['start'])
-    async def start(message: types.Message):
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        webapp = types.WebAppInfo(url=WEBAPP_URL)
-        keyboard.add(types.KeyboardButton(text="Ruda Mini Ilova", web_app=webapp))
-        await message.answer("Mini ilovani ochish uchun tugmani bosing 👇", reply_markup=keyboard)
-
-    def start_bot():
-        print("🤖 Telegram bot ishga tushdi...")
-        executor.start_polling(dp, skip_updates=True)
-
-    # Botni alohida oqimda ishga tushirish
-    threading.Thread(target=start_bot, daemon=True).start()
-
-# ---------------- Flask ishga tushurish ----------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    print(f"🚀 Flask server ishga tushdi: {port} portda")
-    app.run(host="0.0.0.0", port=port)
+    loop = asyncio.get_event_loop()
+    loop.create_task(run_bot())
+    app.run(host="0.0.0.0", port=8080)
