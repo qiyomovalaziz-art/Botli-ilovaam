@@ -1,27 +1,21 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruda Mini Ilova</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            background: linear-gradient(135deg, #e0ffe0, #d6f5ff);
-            color: #222;
-            padding-top: 100px;
-        }
-        h1 {
-            font-size: 28px;
-        }
-        p {
-            color: #555;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruda Mini Ilova</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #e0ffe0, #d6f5ff);
+      color: #222;
+      padding-top: 100px;
+    }
+  </style>
 </head>
 <body>
-    <h1>👋 Ruda Mini Ilova ishlayapti!</h1>
-    <p>Flask server muvaffaqiyatli ishga tushdi 🚀</p>
+  <h1>👋 Ruda Mini Ilova ishlayapti!</h1>
+  <p>Flask server muvaffaqiyatli ishga tushdi 🚀</p>
 </body>
 </html>
