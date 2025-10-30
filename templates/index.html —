@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ruda Mini Ilova</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      background: linear-gradient(135deg, #e0ffe0, #d6f5ff);
-      color: #222;
-      padding-top: 100px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Azizbek Cripto</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>👋 Ruda Mini Ilova ishlayapti!</h1>
-  <p>Flask server muvaffaqiyatli ishga tushdi 🚀</p>
+    <div class="container">
+        <h1>AZIZBEK CRUPTO</h1>
+        <p id="count">Tangalar: 0</p>
+        <img id="logo" src="{{ url_for('static', filename='logo.png') }}" alt="logo">
+        <button id="wallet-btn">Hamyon</button>
+    </div>
+
+    <div id="wallet" class="hidden">
+        <h2>💼 Hamyon</h2>
+        <input type="text" id="address" placeholder="Hamyon manzilingiz">
+        <input type="number" id="amount" placeholder="Yechmoqchi bo‘lgan miqdor">
+        <button id="withdraw">Yechish</button>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
