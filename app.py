@@ -1,32 +1,47 @@
-import asyncio
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart
-from aiogram.types import Message
+from flask import Flask, render_template, request
 import os
-from flask import Flask, render_template
+import telebot
 
-# Bot tokenni olamiz
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-
-# Flask ilova
 app = Flask(__name__)
 
+# 🔹 Environment variable'larni o'qish
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+WEBAPP_URL = os.getenv("WEBAPP_URL")
+
+# 🔹 Agar token yoki URL yo‘q bo‘lsa — xato chiqaramiz
+if not BOT_TOKEN or not WEBAPP_URL:
+    raise ValueError("❌ BOT_TOKEN yoki WEBAPP_URL topilmadi. Railway Variables bo‘limini tekshiring!")
+
+bot = telebot.TeleBot(BOT_TOKEN)
+
+# 🔹 Telegram webhookni sozlash
+@app.route(f"/{BOT_TOKEN}", methods=["POST"])
+def getMessage():
+    json_str = request.get_data().decode("UTF-8")
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])
+    return "OK", 200
+
+
 @app.route("/")
-def home():
-    return render_template("index.html")
+def index():
+    return render_template("index.html")  # templates/index.html ni ochadi
 
-# Aiogram setup
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
 
-@dp.message(CommandStart())
-async def start_cmd(message: Message):
-    await message.answer("Salom! Bot muvaffaqiyatli ishga tushdi 🚀")
+# 🔹 Webhook o‘rnatish
+@app.before_first_request
+def before_first_request():
+    bot.remove_webhook()
+    bot.set_webhook(url=f"{WEBAPP_URL}/{BOT_TOKEN}")
 
-async def run_bot():
-    await dp.start_polling(bot)
+
+# 🔹 Bot komandasi
+@bot.message_handler(commands=["start"])
+def start(message):
+    bot.send_message(message.chat.id, "👋 Ruda mini ilova ishga tushdi!")
+
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(run_bot())
-    app.run(host="0.0.0.0", port=8080)
+    # Railway avtomatik PORT beradi
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
