@@ -1,47 +1,47 @@
-from flask import Flask, render_template, request
-import os
+from flask import Flask, request
 import telebot
+import os
 
-app = Flask(__name__)
-
-# 🔹 Environment variable'larni o'qish
+# 🔹 Environment o'zgaruvchilarni o'qish (Railway Variables'dan)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 WEBAPP_URL = os.getenv("WEBAPP_URL")
 
-# 🔹 Agar token yoki URL yo‘q bo‘lsa — xato chiqaramiz
-if not BOT_TOKEN or not WEBAPP_URL:
-    raise ValueError("❌ BOT_TOKEN yoki WEBAPP_URL topilmadi. Railway Variables bo‘limini tekshiring!")
-
 bot = telebot.TeleBot(BOT_TOKEN)
+app = Flask(__name__)
 
-# 🔹 Telegram webhookni sozlash
+# 🔹 Telegram webhook route
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
-def getMessage():
+def receive_update():
     json_str = request.get_data().decode("UTF-8")
     update = telebot.types.Update.de_json(json_str)
     bot.process_new_updates([update])
     return "OK", 200
 
-
+# 🔹 Oddiy home route
 @app.route("/")
-def index():
-    return render_template("index.html")  # templates/index.html ni ochadi
+def home():
+    return "Bot is running on Railway 🚀"
 
+# 🔹 Flask 3.0 uchun to'g'ri start event
+@app.before_request
+def startup_once():
+    if not getattr(app, "initialized", False):
+        app.initialized = True
+        # webhook ni o'rnatish
+        bot.remove_webhook()
+        bot.set_webhook(url=f"{WEBAPP_URL}/{BOT_TOKEN}")
+        print("✅ Webhook set successfully!")
 
-# 🔹 Webhook o‘rnatish
-@app.before_first_request
-def before_first_request():
-    bot.remove_webhook()
-    bot.set_webhook(url=f"{WEBAPP_URL}/{BOT_TOKEN}")
-
-
-# 🔹 Bot komandasi
+# 🔹 Har bir yangi xabar uchun handler
 @bot.message_handler(commands=["start"])
-def start(message):
-    bot.send_message(message.chat.id, "👋 Ruda mini ilova ishga tushdi!")
+def send_welcome(message):
+    bot.reply_to(message, "Salom! 👋 Bot muvaffaqiyatli ishlamoqda 🚀")
 
+@bot.message_handler(func=lambda message: True)
+def echo_all(message):
+    bot.reply_to(message, message.text)
 
+# 🔹 Flask serverni ishga tushirish
 if __name__ == "__main__":
-    # Railway avtomatik PORT beradi
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.getenv("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
