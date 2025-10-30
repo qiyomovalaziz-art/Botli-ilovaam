@@ -1,2 +1,4 @@
 flask
 aiogram
+aiohttp
+requests
