@@ -9,11 +9,13 @@ from db import init_db, ensure_user, get_balance, change_balance
 init_db()
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
-
 @app.route("/")
 def index():
-    return render_template("index.html")
-
+    # templates/index.html yo'q bo'lsa ham ishlaydi
+    try:
+        return render_template("index.html")
+    except Exception:
+        return "<h1>Ruda Mini Ilova ishlayapti 🚀</h1><p>Flask server muvaffaqiyatli ishga tushdi.</p>"
 
 @app.route("/api/balance", methods=["POST"])
 def api_balance():
@@ -25,7 +27,6 @@ def api_balance():
     bal = get_balance(user_id)
     return jsonify({"ok": True, "balance": bal})
 
-
 @app.route("/api/claim", methods=["POST"])
 def api_claim():
     data = request.json or {}
@@ -36,7 +37,6 @@ def api_claim():
     new_bal = change_balance(user_id, amount)
     return jsonify({"ok": True, "balance": new_bal, "added": amount})
 
-
 @app.route("/api/deposit", methods=["POST"])
 def api_deposit():
     data = request.json or {}
@@ -46,7 +46,6 @@ def api_deposit():
         return jsonify({"ok": False, "error": "user_id and positive amount required"}), 400
     new_bal = change_balance(user_id, amount)
     return jsonify({"ok": True, "balance": new_bal})
-
 
 @app.route("/api/withdraw", methods=["POST"])
 def api_withdraw():
@@ -61,7 +60,6 @@ def api_withdraw():
     new_bal = change_balance(user_id, -amount)
     return jsonify({"ok": True, "balance": new_bal})
 
-
 # ---------------- Aiogram (bot) qismi ----------------
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://your-railway-url.up.railway.app/")
@@ -72,7 +70,7 @@ else:
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher(bot)
 
-    @dp.message_handler(commands=["start"])
+    @dp.message_handler(commands=['start'])
     async def start(message: types.Message):
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         webapp = types.WebAppInfo(url=WEBAPP_URL)
@@ -80,17 +78,14 @@ else:
         await message.answer("Mini ilovani ochish uchun tugmani bosing 👇", reply_markup=keyboard)
 
     def start_bot():
-        from asyncio import new_event_loop, set_event_loop
-        loop = new_event_loop()
-        set_event_loop(loop)
+        print("🤖 Telegram bot ishga tushdi...")
         executor.start_polling(dp, skip_updates=True)
 
-    # Botni alohida threadda ishga tushuramiz
+    # Botni alohida oqimda ishga tushirish
     threading.Thread(target=start_bot, daemon=True).start()
-
 
 # ---------------- Flask ishga tushurish ----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    print(f"🚀 Flask server running on port {port}")
+    print(f"🚀 Flask server ishga tushdi: {port} portda")
     app.run(host="0.0.0.0", port=port)
