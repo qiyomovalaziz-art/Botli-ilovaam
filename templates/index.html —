@@ -1,91 +1,27 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="uz">
 <head>
-  <meta charset="utf-8" />
-  <title>Ruda Mini Ilova</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background:#080808; color:#fff; display:flex; flex-direction:column; align-items:center; padding:20px; }
-    .card { width:320px; text-align:center; background:#0b0b0b; padding:16px; border-radius:12px; box-shadow: 0 6px 18px rgba(0,0,0,0.6); }
-    img { width:100%; border-radius:8px; cursor:pointer; }
-    button { margin-top:10px; padding:10px; width:100%; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }
-    .btn-primary { background: linear-gradient(90deg,#06b6d4,#7c3aed); color:white; }
-    .balance { margin-top:10px; font-size:18px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruda Mini Ilova</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #e0ffe0, #d6f5ff);
+            color: #222;
+            padding-top: 100px;
+        }
+        h1 {
+            font-size: 28px;
+        }
+        p {
+            color: #555;
+        }
+    </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Ruda Coin</h2>
-    <!-- SIZ JOYLAGAN RASMni static/ruda.jpg deb qo'ying -->
-    <img id="rudaImg" src="/static/ruda.jpg" alt="Ruda" title="Ruda ga bosish" />
-    <div class="balance">Balans: <span id="balance">0</span> Ruda</div>
-
-    <button id="claimBtn" class="btn-primary">Ruda olish (+1)</button>
-    <button id="depositBtn">Demoda pul qo'yish (+10)</button>
-    <button id="withdrawBtn">Demoda yechib olish (-5)</button>
-  </div>
-
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    // initDataUnsafe orqali foydalanuvchi ma'lumotini olish (demonstratsiya sifatida)
-    const user = tg.initDataUnsafe?.user || {};
-    const user_id = user.id || null;
-    const first_name = user.first_name || "Anon";
-
-    const balanceEl = document.getElementById('balance');
-    const baseApi = ''; // agar deploy qilinganda o'zgarmaydi (same origin)
-
-    async function api(path, data){
-      const res = await fetch("/api/" + path, {
-        method: "POST",
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      });
-      return res.json();
-    }
-
-    async function loadBalance(){
-      if(!user_id){ balanceEl.innerText = "0 (tg user yo'q)"; return; }
-      const r = await api('balance', {user_id: user_id, first_name: first_name});
-      if(r.ok) balanceEl.innerText = r.balance;
-    }
-
-    document.getElementById('rudaImg').addEventListener('click', async () => {
-      // rasimga bosilganda coin berish
-      if(!user_id) { alert("Telegram foydalanuvchi topilmadi."); return; }
-      const r = await api('claim', {user_id: user_id, amount: 1});
-      if(r.ok){
-        balanceEl.innerText = r.balance;
-        // telegramga xabar yuborish: tg.sendData yoki close
-        tg.sendData(JSON.stringify({action: "claimed_ruda", added: r.added}));
-      } else {
-        alert("Xato: " + (r.error || "unknown"));
-      }
-    });
-
-    document.getElementById('claimBtn').addEventListener('click', async () => {
-      if(!user_id) return alert("Telegram foydalanuvchi topilmadi.");
-      const r = await api('claim', {user_id: user_id, amount: 1});
-      if(r.ok) balanceEl.innerText = r.balance;
-    });
-
-    document.getElementById('depositBtn').addEventListener('click', async () => {
-      if(!user_id) return alert("Telegram foydalanuvchi topilmadi.");
-      const r = await api('deposit', {user_id: user_id, amount: 10});
-      if(r.ok) balanceEl.innerText = r.balance;
-    });
-    document.getElementById('withdrawBtn').addEventListener('click', async () => {
-      if(!user_id) return alert("Telegram foydalanuvchi topilmadi.");
-      const r = await api('withdraw', {user_id: user_id, amount: 5});
-      if(r.ok) balanceEl.innerText = r.balance;
-      else alert("Xato: " + (r.error || "unknown"));
-    });
-
-    // sahifa yuklanganda balansni ko'rsatish
-    loadBalance();
-  </script>
+    <h1>👋 Ruda Mini Ilova ishlayapti!</h1>
+    <p>Flask server muvaffaqiyatli ishga tushdi 🚀</p>
 </body>
 </html>
